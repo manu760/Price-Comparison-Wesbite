@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>AllMacbooks</title>
+    <style>
+        .heading {
+            font-size: x-large;
+            color: white;
+            background: black;
+            padding-top: 50%;
+            padding-bottom: 20px;
+            padding-right: 100%;
+            text-align: center;
+            overflow: hidden;
+            /*border-style: dashed;*/
+        }
+
+        a {
+            font-size: large;
+
+
+        }
+
+        p {
+
+            color: black;
+
+
+        }
+
+
+        .search {
+            padding-bottom: 30px;
+            padding-left: 250px;
+            padding-right: 250px;
+
+        }
+
+        ::placeholder {
+            color: palevioletred;
+            font-size: large;
+            text-align: center;
+
+
+        }
+
+        td, th {
+            padding: 5px;
+            border-style: solid;
+
+        }
+        body{
+            background-color: lightgrey;
+        }
+
+        th {
+            cursor: pointer;
+            padding: 10px;
+            background-color: cornflowerblue;
+            border-spacing: 30px;
+        }
+
+        tr {
+            color: black;
+            font-size: x-large;
+
+        }
+
+        footer {
+            text-align: center;
+            padding-top: 10px;
+            padding-bottom: 4px;
+            background-color: palevioletred;
+            color: white;
+        }
+
+        button {
+            padding: 15px;
+            color: blue;
+            background: lightskyblue;
+        }
+
+
+    </style>
+    <!-- Vue development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <!--    &lt;!&ndash; Axios library &ndash;&gt;-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Load polyfills to support older browsers -->
+    <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
+            crossorigin="anonymous"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+
+</head>
+
+
+<body>
+
+<topnav class="heading">Macbooks</topnav>
+<br>
+<br>
+<br>
+<br>
+<a href="product.html">Compare Prices</a>
+<br>
+
+<br>
+<div id="app">
+
+    <br>
+    <br>
+
+    <input class="search" placeholder="search products" type="search" v-model="filter">
+
+
+    <p>Page Number: {{currentPage}}</p>
+    <table>
+        <thead>
+        <tr>
+
+            <button @click="sort('name')">Sort By Name</button>
+            <button @click="sort('price')">Sort By Price</button>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="product in sortedProducts">
+           <td><img src="images/macbook.png" width="300px" height="200px"/></td>
+
+            <td>{{product.name}}</td>
+
+            <td>{{product.price}}</td>
+        </tr>
+        </tbody>
+    </table>
+    <p>
+        <button @click="prevPage">Previous</button>
+        <button @click="nextPage">Next</button>
+    </p>
+
+</div>
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            filter: '',
+            currentSort: 'price',
+            currentSortDir: 'asc',
+            pageSize: 10,
+            currentPage: 1,
+            products: [],
+        },
+        computed: {
+            filteredProducts: function () {
+                return this.products.filter((product) => {
+                    return product.name.match(this.search)
+                })
+            }
+        },
+        methods: {
+
+            //Get all the cereals from the web service using Axios.
+            loadAllProducts: function () {
+                const localApp = this;
+
+                axios.get('/products')//Send GET request to products path
+                    .then(function (response) {//Request successful
+                        //Point cereals in data to returned array of cereals
+                        localApp.products = response.data.products;
+                        console.log(JSON.stringify(response.data.products));
+                    })
+
+            },
+            loadAllLaptops: function () {
+                const localApp = this;
+
+                axios.get('/laptops')//Send GET request to products path
+                    .then(function (response) {//Request successful
+                        //Point cereals in data to returned array of cereals
+                        localApp.laptops = response.data.laptops;
+                        console.log(JSON.stringify(response.data.laptops));
+                    })
+
+            },
+            sort: function (s) {
+                //if s == current sort, reverse
+                if (s === this.currentSort) {
+                    this.currentSortDir = this.currentSortDir === 'asc' ? 'desc' : 'asc';
+                }
+                this.currentSort = s;
+            },
+            nextPage: function () {
+                if ((this.currentPage * this.pageSize) < this.filteredProducts.length) this.currentPage++;
+            },
+            prevPage: function () {
+                if (this.currentPage > 1) this.currentPage--;
+            }
+
+        },
+        watch: {
+            filter() {
+                console.log('reset to p1 due to filter');
+                this.currentPage = 1;
+            }
+        },
+        computed: {
+            filteredProducts() {
+                return this.products.filter(c => {
+                    if (this.filter == '') return true;
+                    return c.name.toLowerCase().indexOf(this.filter.toLowerCase()) >= 0;
+                })
+            },
+            sortedProducts() {
+
+                return this.filteredProducts.sort((a, b) => {
+                    let modifier = 1;
+                    if (this.currentSortDir === 'desc') modifier = -1;
+                    if (a[this.currentSort] < b[this.currentSort]) return -1 * modifier;
+                    if (a[this.currentSort] > b[this.currentSort]) return 1 * modifier;
+                    return 0;
+                }).filter((row, index) => {
+                    let start = (this.currentPage - 1) * this.pageSize;
+                    let end = this.currentPage * this.pageSize;
+                    if (index >= start && index < end) return true;
+                });
+            }
+        },
+        created: function () {//Vue lifecycle hook, called when data is loaded.
+            //Load cereals from web service
+            this.loadAllProducts();
+            this.loadAllLaptops();
+
+            //Refresh cereals every 5 seconds
+            setInterval(this.loadAllProducts, 5000);
+            setInterval(this.loadAllLaptops,5000);
+        }
+    })
+
+</script>
+</body>
+</html>

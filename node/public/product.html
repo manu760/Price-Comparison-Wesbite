@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Macbooks</title>
+    <style>
+        .heading {
+            font-size: x-large;
+            color: white;
+            background: black;
+            padding-top: 50%;
+            padding-bottom: 20px;
+            padding-bottom: 20px;
+            padding-right: 1800px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        td, th {
+            padding: 5px;
+        }
+
+        th {
+            cursor: pointer;
+        }
+
+        p {
+            color: black;
+            font-size: larger;
+            border-style: double;
+
+        }
+
+
+        a {
+            font-size: large;
+            color: white;
+            border-style: double;
+
+        }
+        button{
+            color: blue;
+            background-color: #F8981D;
+            padding: 10px;
+        }
+        body{
+            background-color: lightgrey;
+        }
+
+    </style>
+    <!-- Vue development version, includes helpful console warnings -->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <!--    &lt;!&ndash; Axios library &ndash;&gt;-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- Load polyfills to support older browsers -->
+    <script src="//polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
+            crossorigin="anonymous"></script>
+
+    <!-- Load Vue followed by BootstrapVue -->
+    <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
+
+    <!-- Load the following for BootstrapVueIcons support -->
+    <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+    <link rel="shortcut icon" href="~/favicon.ico">
+</head>
+<body>
+
+<div id="app">
+    <topnav class="heading">All Products</topnav>
+
+    <p v-for="product in products">
+        <b>{{product.name}}</b><br>
+        <img src="images/macbook1.png" height="200" width="300"/><br>
+        <b>Price: {{product.price}}</b><br>
+
+        <b><a href="Comparision.html"><button>Compare</button></a></b>
+    </p>
+</div>
+
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            products: [],
+        },
+        computed: {
+            rows() {
+                return this.products.length
+            }
+        },
+        methods: {
+
+            //Get all the cereals from the web service using Axios.
+            loadAllProducts: async function () {
+                const localApp = this;
+
+                await axios.get('/products/limit')//Send GET request to products path
+                    .then(function (response) {//Request successful
+                        //Point cereals in data to returned array of cereals
+                        localApp.products = response.data.products;
+                        console.log(JSON.stringify(response.data.products));
+
+                    })
+               }
+        },
+
+
+        created: function () {//Vue lifecycle hook, called when data is loaded.
+            //Load cereals from web service
+            this.loadAllProducts();
+
+            //Refresh cereals every 5 seconds
+            setInterval(this.loadAllProducts, 5000);
+        },
+    })
+
+
+</script>
+</body>
+</html>
